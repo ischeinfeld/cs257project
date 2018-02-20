@@ -101,6 +101,6 @@ ENV/
 .mypy_cache/
 
 # Latex
-.aux
-.log
-.synctex.gz
+*.aux
+*.log
+*.synctex.gz
