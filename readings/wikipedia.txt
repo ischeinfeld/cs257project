@@ -11,3 +11,4 @@ https://en.wikipedia.org/wiki/Regular_language
 https://en.wikipedia.org/wiki/Chomsky_hierarchy
 https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton
 https://en.wikipedia.org/wiki/Deterministic_finite_automaton
+Practical Regexes Paper
