@@ -104,3 +104,4 @@ ENV/
 *.aux
 *.log
 *.synctex.gz
+*.npy
