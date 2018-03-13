@@ -1,4 +1,5 @@
 import re
+import random
 from itertools import product
 from itertools import islice
 from string import ascii_letters
@@ -9,13 +10,22 @@ from sklearn.model_selection import train_test_split
 
 class Dataset:
     def __init__(self, regex_max_length, string_max_length, alphabet, regex_chars):
+        self.regex_max_length = regex_max_length
+        self.string_max_length = string_max_length
+        self.alphabet = alphabet
+        self.regex_chars = regex_chars
+
         self.regex_char_int = {c: i + 1 for i, c in enumerate(alphabet + regex_chars)}
         self.string_char_int = {c: i + 1 for i, c in enumerate(alphabet)}
-        self.regex_int_char = {i: c + 1 for i, c in enumerate(alphabet + regex_chars)}
-        self.string_int_char = {i: c + 1 for i, c in enumerate(alphabet)}
+        self.regex_int_char = "_" + alphabet + regex_chars
+        self.string_int_char = "_" + alphabet
 
-    def gen(self):
-        return dataset_generator(regex_max_length, string_max_length, alphabet, regex_chars)
+    def gen(self, random_frac = None):
+        return dataset_generator(self.regex_max_length, self.string_max_length, self.alphabet, self.regex_chars, random_frac)
+
+    def bound_size(self):
+        return triple_count_bound(self.regex_max_length, self.string_max_length, self.alphabet, self.regex_chars)
+
 
 
 def all_strings(max_length, alphabet):
@@ -67,7 +77,7 @@ def triple_generator(regex_max_length, string_max_length, alphabet, regex_chars)
         for string in all_strings(string_max_length, alphabet):
             yield regex.pattern, string, bool(regex.fullmatch(string))
 
-def dataset_generator(regex_max_length, string_max_length, alphabet, regex_chars):
+def dataset_generator(regex_max_length, string_max_length, alphabet, regex_chars, random_frac):
     """Returns a generator that gives for every regex-string pair
     up to a length whether or not they match, with strings encoded
     as character index lists"""
@@ -75,8 +85,9 @@ def dataset_generator(regex_max_length, string_max_length, alphabet, regex_chars
     string_char_int = {c: i + 1 for i, c in enumerate(alphabet)}
     
     for regex in all_regexes(regex_max_length, alphabet + regex_chars):
-        regex_ints = [regex_char_int[c] for c in regex.pattern.replace("\\", "")]
-        for string in all_strings(string_max_length, alphabet):
-            string_ints = [string_char_int[c] for c in string]
-            if len(regex.pattern) != 0 and len(string) != 0:
-                yield regex_ints, string_ints, np.int64(int(bool(regex.fullmatch(string))))
+        if len(regex.pattern) != 0:
+            regex_ints = [regex_char_int[c] for c in regex.pattern.replace("\\", "")]
+            for string in all_strings(string_max_length, alphabet):
+                if len(string) != 0 and (random_frac == None or random.random() < random_frac):
+                    string_ints = [string_char_int[c] for c in string]
+                    yield regex_ints, string_ints, np.int64(int(bool(regex.fullmatch(string))))
